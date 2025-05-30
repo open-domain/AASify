@@ -1,14 +1,14 @@
 import type { ValidationAcceptor, ValidationChecks } from 'langium';
-import type { AaSifyAstType, Person } from './generated/ast.js';
-import type { AaSifyServices } from './aasify-module.js';
+import type { AASifyAstType, Person } from './generated/ast.js';
+import type { AASifyServices } from './aasify-module.js';
 
 /**
  * Register custom validation checks.
  */
-export function registerValidationChecks(services: AaSifyServices) {
+export function registerValidationChecks(services: AASifyServices) {
     const registry = services.validation.ValidationRegistry;
     const validator = services.validation.AaSifyValidator;
-    const checks: ValidationChecks<AaSifyAstType> = {
+    const checks: ValidationChecks<AASifyAstType> = {
         Person: validator.checkPersonStartsWithCapital
     };
     registry.register(checks, validator);
@@ -17,7 +17,7 @@ export function registerValidationChecks(services: AaSifyServices) {
 /**
  * Implementation of custom validations.
  */
-export class AaSifyValidator {
+export class AASifyValidator {
 
     checkPersonStartsWithCapital(person: Person, accept: ValidationAcceptor): void {
         if (person.name) {

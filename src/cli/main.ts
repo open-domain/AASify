@@ -1,7 +1,7 @@
 import type { Model } from '../language/generated/ast.js';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { AaSifyLanguageMetaData } from '../language/generated/module.js';
+import { AASifyLanguageMetaData } from '../language/generated/module.js';
 import { createAaSifyServices } from '../language/aasify-module.js';
 import { extractAstNode } from './cli-util.js';
 import { generateJavaScript } from './generator.js';
@@ -30,7 +30,7 @@ export default function(): void {
 
     program.version(JSON.parse(packageContent).version);
 
-    const fileExtensions = AaSifyLanguageMetaData.fileExtensions.join(', ');
+    const fileExtensions = AASifyLanguageMetaData.fileExtensions.join(', ');
     program
         .command('generate')
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)

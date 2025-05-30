@@ -1,0 +1,1 @@
+{"root":["./src/cli/cli-util.ts","./src/cli/generator.ts","./src/cli/main.ts","./src/extension/main.ts","./src/language/aasify-module.ts","./src/language/aasify-validator.ts","./src/language/main.ts","./src/language/generated/ast.ts","./src/language/generated/grammar.ts","./src/language/generated/module.ts"],"version":"5.8.3"}

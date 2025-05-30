@@ -2,40 +2,72 @@
     "name": "AASify",
     "description": "Please enter a brief description here",
     "version": "0.0.1",
+    "publisher": "Open-Domain",
     "files": [
         "bin",
         "out",
         "src"
     ],
     "type": "module",
+    "icon": "./image/magic-wand-icon.png",
+    "license": "GPL-3.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-domain/AASify.git"
+    },
     "scripts": {
-        "build": "tsc -b tsconfig.src.json && node esbuild.mjs",
+        "build": "npm run build:tsc",
+        "build:all": "npm run clean && npm run langium:generate && npm run build:tsc && npm run build:extension",
+        "build:tsc": "tsc -b tsconfig.src.json && node ./esbuild.mjs",
+        "build:extension": "npm run esbuild:extension && npm run esbuild:ls",
+        "esbuild:extension": "esbuild ./src/extension/main.ts --bundle --outfile=./out/extension/main.cjs --external:vscode --format=cjs --platform=node",
+        "esbuild:ls": "esbuild ./src/language/main.ts --bundle --outfile=./out/language/main.cjs --format=cjs --platform=node",
         "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.src.json --watch\" \"node esbuild.mjs --watch\"",
         "lint": "eslint src --ext ts",
         "langium:generate": "langium generate",
         "langium:generate:production": "langium generate --mode=production",
         "langium:watch": "langium generate --watch",
-        "vscode:prepublish": "npm run build && npm run lint",
-        "test": "vitest run"
+        "vscode:prepublish": "npm run langium:generate && npm run build && npm run lint",
+        "vscode:publish": "npm run vscode:prepublish && vsce package",
+        "test": "vitest run",
+        "generate": "ts-node ./src/cli/main.ts"
     },
     "dependencies": {
         "langium": "~3.5.0",
-        "vscode-languageclient": "~9.0.1",
-        "vscode-languageserver": "~9.0.1",
+        "langium-sprotty": "~3.5.0",
+        "langium-railroad": "~3.5.0",
         "chalk": "~5.3.0",
-        "commander": "~11.0.0"
+        "commander": "~11.0.0",
+        "feather-icons": "^4.29.2",
+        "font-list": "^1.5.1",
+        "async-mutex": "^0.5.0",
+        "sprotty": "^1.4.0",
+        "sprotty-elk": "^1.4.0",
+        "sprotty-vscode": "^1.0.0",
+        "sprotty-vscode-webview": "^1.0.0",
+        "vscode-languageclient": "^9.0.1",
+        "vscode-languageserver": "^9.0.1",
+        "vscode-languageserver-protocol": "~3.17.5",
+        "vscode-languageserver-types": "~3.17.5",
+        "vscode-uri":"~3.1.0",
+        "vscode-jsonrpc":"~8.2.1"
     },
     "devDependencies": {
-        "@types/node": "^18.0.0",
-        "@typescript-eslint/parser": "~7.3.1",
-        "@typescript-eslint/eslint-plugin": "~7.3.1",
-        "eslint": "~8.57.0",
+        "@types/node": "^22.15.27",
+        "@types/vscode": "~1.100.0",
+        "@typescript-eslint/parser": "~8.33.0",
+        "@typescript-eslint/eslint-plugin": "~8.33.0",
+        "@types/vscode-windows-registry" : "~1.0.3",
+        "@vscode/vsce": "~3.4.2",
         "langium-cli": "~3.5.0",
-        "typescript": "~5.1.6",
-        "@types/vscode": "~1.67.0",
-        "concurrently": "~8.2.1",
-        "esbuild": "~0.20.2",
-        "vitest": "~1.4.0"
+        "shx": "^0.4.0",
+        "typescript": "~5.8.3",
+        "concurrently": "~9.1.2",
+        "esbuild": "^0.25.5",
+        "eslint": "~9.27.0",
+        "vitest": "^3.1.4",
+        "webpack": "^5.99.9",
+        "webpack-cli": "^6.0.1"
     },
     "volta": {
         "node": "18.19.1",
@@ -43,7 +75,7 @@
     },
     "displayName": "AASify",
     "engines": {
-        "vscode": "^1.67.0",
+        "vscode": "^1.96.0",
         "node": ">=18.0.0"
     },
     "categories": [

@@ -1,14 +1,14 @@
 import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
-import { AaSifyGeneratedModule, AaSifyGeneratedSharedModule } from './generated/module.js';
-import { AaSifyValidator, registerValidationChecks } from './aasify-validator.js';
+import { AASifyGeneratedModule, AASifyGeneratedSharedModule } from './generated/module.js';
+import { AASifyValidator, registerValidationChecks } from './aasify-validator.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
-export type AaSifyAddedServices = {
+export type AASifyAddedServices = {
     validation: {
-        AaSifyValidator: AaSifyValidator
+        AaSifyValidator: AASifyValidator
     }
 }
 
@@ -16,16 +16,16 @@ export type AaSifyAddedServices = {
  * Union of Langium default services and your custom services - use this as constructor parameter
  * of custom service classes.
  */
-export type AaSifyServices = LangiumServices & AaSifyAddedServices
+export type AASifyServices = LangiumServices & AASifyAddedServices
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the
  * declared custom services. The Langium defaults can be partially specified to override only
  * selected services, while the custom services must be fully specified.
  */
-export const AaSifyModule: Module<AaSifyServices, PartialLangiumServices & AaSifyAddedServices> = {
+export const AaSifyModule: Module<AASifyServices, PartialLangiumServices & AASifyAddedServices> = {
     validation: {
-        AaSifyValidator: () => new AaSifyValidator()
+        AaSifyValidator: () => new AASifyValidator()
     }
 };
 
@@ -46,15 +46,15 @@ export const AaSifyModule: Module<AaSifyServices, PartialLangiumServices & AaSif
  */
 export function createAaSifyServices(context: DefaultSharedModuleContext): {
     shared: LangiumSharedServices,
-    AaSify: AaSifyServices
+    AaSify: AASifyServices
 } {
     const shared = inject(
         createDefaultSharedModule(context),
-        AaSifyGeneratedSharedModule
+        AASifyGeneratedSharedModule
     );
     const AaSify = inject(
         createDefaultModule({ shared }),
-        AaSifyGeneratedModule,
+        AASifyGeneratedModule,
         AaSifyModule
     );
     shared.ServiceRegistry.register(AaSify);

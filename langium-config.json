@@ -1,8 +1,8 @@
 {
-    "projectName": "AaSify",
+    "projectName": "AASify",
     "languages": [{
         "id": "aasify",
-        "grammar": "src/language/aasify.langium",
+        "grammar": "src/language/grammer/aasify.langium",
         "fileExtensions": [".aasify"],
         "textMate": {
             "out": "syntaxes/aasify.tmLanguage.json"
