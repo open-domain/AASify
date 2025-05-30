@@ -1,0 +1,12 @@
+{
+    "projectName": "AaSify",
+    "languages": [{
+        "id": "aasify",
+        "grammar": "src/language/aasify.langium",
+        "fileExtensions": [".aasify"],
+        "textMate": {
+            "out": "syntaxes/aasify.tmLanguage.json"
+        }
+    }],
+    "out": "src/language/generated"
+}
