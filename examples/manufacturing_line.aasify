@@ -1,0 +1,191 @@
+// Manufacturing Line AAS Example
+environment ManufacturingLine {
+    
+    // Define the manufacturing asset
+    asset "urn:example:manufacturing:line:001" (ProductionLine) {
+        description "en": "Automated manufacturing production line", 
+                   "de": "Automatisierte Fertigungslinie"
+        kind Instance
+        category "PhysicalAsset"
+        
+        billOfMaterial {
+            entry "urn:example:robot:001" count 2
+            entry "urn:example:conveyor:001" count 1
+            entry "urn:example:sensor:temp:001" count 5
+        }
+    }
+
+    // Define concept descriptions
+    concept "urn:example:concepts:temperature" (TemperatureConcept) {
+        description "en": "Temperature measurement concept",
+                   "de": "Temperaturmessungskonzept"
+        category "PROPERTY"
+        
+        embeddedDataSpecifications {
+            dataSpec ref(GlobalReference, "http://www.example.com/ids/cd/temperature") 
+            iec61360 {
+                preferredName "en": "Temperature", "de": "Temperatur"
+                shortName "en": "Temp", "de": "Temp"
+                unit "°C"
+                dataType double
+                definition "en": "Physical quantity expressing hot and cold",
+                          "de": "Physikalische Größe für heiß und kalt"
+                valueFormat "REAL_MEASURE"
+            }
+        }
+    }
+
+    // Define submodels
+    submodel "urn:example:submodel:technical_data" (TechnicalData) {
+        description "en": "Technical specifications and operational parameters",
+                   "de": "Technische Spezifikationen und Betriebsparameter"
+        
+        qualifiers {
+            qualifier "Multiplicity" {
+                valueType string
+                value "ZeroToOne"
+            }
+        }
+
+        elements {
+            // Properties
+            property MaxTemperature (ref(ModelReference, TemperatureConcept)) {
+                description "en": "Maximum operating temperature",
+                           "de": "Maximale Betriebstemperatur"
+                category "PARAMETER"
+                valueType double
+                value 85.0
+                
+                qualifiers {
+                    qualifier "Unit" {
+                        valueType string
+                        value "°C"
+                    }
+                }
+            }
+
+            property MinTemperature (ref(ModelReference, TemperatureConcept)) {
+                description "en": "Minimum operating temperature"
+                valueType double
+                value -10.0
+            }
+
+            // Range for operating temperature
+            range OperatingTemperatureRange (ref(ModelReference, TemperatureConcept)) {
+                description "en": "Acceptable operating temperature range"
+                valueType double
+                min -10.0
+                max 85.0
+            }
+
+            // Multi-language property
+            mlproperty ManufacturerInfo {
+                description "en": "Manufacturer information"
+                value "en": "ACME Manufacturing Corp",
+                      "de": "ACME Fertigungs GmbH",
+                      "fr": "ACME Fabrication SA"
+            }
+
+            // File reference
+            file UserManual {
+                description "en": "User manual document"
+                mimeType "application/pdf"
+                value "/documents/user_manual_v2.1.pdf"
+            }
+
+            // Collection of sensors
+            collection Sensors {
+                description "en": "Temperature sensors in the production line"
+                ordered
+                
+                elements {
+                    property Sensor1_Temperature (ref(ModelReference, TemperatureConcept)) {
+                        valueType double
+                        value 23.5
+                    }
+                    
+                    property Sensor2_Temperature (ref(ModelReference, TemperatureConcept)) {
+                        valueType double
+                        value 25.1
+                    }
+                    
+                    property Sensor3_Temperature (ref(ModelReference, TemperatureConcept)) {
+                        valueType double
+                        value 22.8
+                    }
+                }
+            }
+
+            // Operation for calibration
+            operation CalibrateTemperatureSensors {
+                description "en": "Calibrate all temperature sensors"
+                
+                inputVariables {
+                    var property CalibrationMode {
+                        valueType string
+                        value "automatic"
+                    }
+                }
+                
+                outputVariables {
+                    var property CalibrationResult {
+                        valueType boolean
+                    }
+                }
+            }
+
+            // Event for temperature alert
+            event TemperatureAlert {
+                description "en": "Temperature exceeds safe operating limits"
+                direction output
+                state on
+                messageTopic "manufacturing/alerts/temperature"
+                maxInterval "PT30S"
+            }
+
+            // Relationship between sensors and zones
+            relationship SensorToZoneMapping {
+                description "en": "Maps sensors to manufacturing zones"
+                first ref(ModelReference, Sensor1_Temperature)
+                second ref(ModelReference, "urn:example:zone:assembly")
+            }
+        }
+    }
+
+    // Asset Administration Shell
+    aas "urn:example:aas:manufacturing_line:001" (ManufacturingLineAAS) {
+        description "en": "AAS for the automated manufacturing production line",
+                   "de": "AAS für die automatisierte Fertigungslinie"
+        
+        administration admin {
+            version "1.0"
+            revision "2"
+            creator ref(GlobalReference, "urn:example:creator:acme_engineering")
+        }
+        
+        asset "urn:example:manufacturing:line:001"
+        
+        submodels {
+            "urn:example:submodel:technical_data"
+        }
+        
+        views {
+            view OperationalView {
+                description "en": "Operational parameters and real-time data"
+                containedElements {
+                    MaxTemperature,
+                    MinTemperature,
+                    Sensors
+                }
+            }
+            
+            view MaintenanceView {
+                description "en": "Maintenance-related information and operations"
+                containedElements {
+                    CalibrateTemperatureSensors,
+                    UserManual
+                }
+            }
+        }
+    }
+}

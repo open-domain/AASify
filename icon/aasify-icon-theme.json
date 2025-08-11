@@ -1,0 +1,35 @@
+{
+    "iconDefinitions": {
+        "aasify-file": {
+            "iconPath": "./aasify.bmp"
+        },
+        "aasify-file-svg": {
+            "iconPath": "./aasify.svg"
+        }
+    },
+    "fileExtensions": {
+        "aasify": "aasify-file"
+    },
+    "fileNames": {},
+    "folderNames": {},
+    "folderNamesExpanded": {},
+    "languageIds": {
+        "aasify": "aasify-file"
+    },
+    "light": {
+        "fileExtensions": {
+            "aasify": "aasify-file"
+        },
+        "languageIds": {
+            "aasify": "aasify-file"
+        }
+    },
+    "highContrast": {
+        "fileExtensions": {
+            "aasify": "aasify-file"
+        },
+        "languageIds": {
+            "aasify": "aasify-file"
+        }
+    }
+}

@@ -1,0 +1,736 @@
+// HVAC Room Control System AAS Definition
+// This example demonstrates a comprehensive room control system
+// managing temperature, humidity, air quality, and lighting
+
+environment SmartBuildingHVAC {
+    
+    // Import common HVAC concepts (if available)
+    // import "hvac-common-concepts.aasify" as hvac
+
+    // Define the main room control unit asset
+    asset "urn:building:hvac:room:101:controller" (RoomController101) {
+        description "en": "Smart room control unit for office room 101",
+                   "de": "Intelligente Raumsteuerung für Büroraum 101"
+        kind Instance
+        category "ControlSystem"
+        
+        billOfMaterial {
+            entry "urn:building:sensors:temp:101:001" count 2
+            entry "urn:building:sensors:humidity:101:001" count 1
+            entry "urn:building:sensors:co2:101:001" count 1
+            entry "urn:building:actuators:damper:101:001" count 2
+            entry "urn:building:actuators:valve:101:001" count 1
+        }
+    }
+
+    // Temperature sensor asset
+    asset "urn:building:sensors:temp:101:001" (TempSensor101) {
+        description "en": "Temperature sensor for room 101"
+        kind Instance
+        category "Sensor"
+    }
+
+    // Humidity sensor asset  
+    asset "urn:building:sensors:humidity:101:001" (HumiditySensor101) {
+        description "en": "Humidity sensor for room 101"
+        kind Instance
+        category "Sensor"
+    }
+
+    // CO2 sensor asset
+    asset "urn:building:sensors:co2:101:001" (CO2Sensor101) {
+        description "en": "CO2 air quality sensor for room 101"
+        kind Instance
+        category "Sensor"
+    }
+
+    // Air damper actuator
+    asset "urn:building:actuators:damper:101:001" (AirDamper101) {
+        description "en": "Variable air volume damper for room 101"
+        kind Instance
+        category "Actuator"
+    }
+
+    // Heating valve actuator
+    asset "urn:building:actuators:valve:101:001" (HeatingValve101) {
+        description "en": "Hot water heating valve for room 101"
+        kind Instance
+        category "Actuator"
+    }
+
+    // Define concept descriptions for HVAC parameters
+    concept "urn:hvac:concepts:temperature" (TemperatureConcept) {
+        description "en": "Room air temperature measurement",
+                   "de": "Raumlufttemperatur-Messung"
+        category "PROPERTY"
+        
+        embeddedDataSpecifications {
+            dataSpec ref(GlobalReference, "http://www.iec.ch/61360/temperature") 
+            iec61360 {
+                preferredName "en": "Temperature", "de": "Temperatur"
+                shortName "en": "Temp", "de": "Temp"
+                unit "°C"
+                dataType double
+                definition "en": "Ambient air temperature in degrees Celsius",
+                          "de": "Umgebungslufttemperatur in Grad Celsius"
+                valueFormat "REAL_MEASURE"
+                levelType Nom
+            }
+        }
+    }
+
+    concept "urn:hvac:concepts:humidity" (HumidityConcept) {
+        description "en": "Relative humidity measurement"
+        category "PROPERTY"
+        
+        embeddedDataSpecifications {
+            dataSpec ref(GlobalReference, "http://www.iec.ch/61360/humidity")
+            iec61360 {
+                preferredName "en": "Relative Humidity", "de": "Relative Luftfeuchtigkeit"
+                shortName "en": "RH", "de": "rF"
+                unit "%"
+                dataType double
+                definition "en": "Relative humidity as percentage of saturation"
+                valueFormat "REAL_MEASURE"
+                levelType Nom
+            }
+        }
+    }
+
+    concept "urn:hvac:concepts:co2" (CO2Concept) {
+        description "en": "Carbon dioxide concentration measurement"
+        category "PROPERTY"
+        
+        embeddedDataSpecifications {
+            dataSpec ref(GlobalReference, "http://www.iec.ch/61360/co2")
+            iec61360 {
+                preferredName "en": "CO2 Concentration"
+                shortName "en": "CO2"
+                unit "ppm"
+                dataType int
+                definition "en": "Carbon dioxide concentration in parts per million"
+                valueFormat "INTEGER_MEASURE"
+                levelType Nom
+            }
+        }
+    }
+
+    // Environmental monitoring submodel
+    submodel "urn:submodel:environmental:monitoring" (EnvironmentalMonitoring) {
+        description "en": "Real-time environmental sensor readings and status",
+                   "de": "Echtzeit-Umweltsensorwerte und Status"
+        
+        administration admin {
+            version "2.1"
+            revision "5"
+            creator ref(GlobalReference, "urn:company:hvac:engineering")
+        }
+
+        qualifiers {
+            qualifier "UpdateFrequency" {
+                valueType string
+                value "10s"
+            }
+        }
+
+        elements {
+            // Current sensor readings
+            property CurrentTemperature (ref(ModelReference, TemperatureConcept)) {
+                description "en": "Current room temperature reading",
+                           "de": "Aktuelle Raumtemperatur"
+                category "MEASURED_VALUE"
+                valueType double
+                value 22.3
+                
+                qualifiers {
+                    qualifier "Accuracy" {
+                        valueType string
+                        value "±0.1°C"
+                    }
+                    qualifier "LastUpdate" {
+                        valueType string
+                        value "2024-08-08T14:30:15Z"
+                    }
+                }
+            }
+
+            property CurrentHumidity (ref(ModelReference, HumidityConcept)) {
+                description "en": "Current relative humidity reading"
+                category "MEASURED_VALUE"
+                valueType double
+                value 45.2
+                
+                qualifiers {
+                    qualifier "Accuracy" {
+                        valueType string
+                        value "±2%"
+                    }
+                }
+            }
+
+            property CurrentCO2 (ref(ModelReference, CO2Concept)) {
+                description "en": "Current CO2 concentration reading"
+                category "MEASURED_VALUE"
+                valueType int
+                value 420
+                
+                qualifiers {
+                    qualifier "Accuracy" {
+                        valueType string
+                        value "±50ppm"
+                    }
+                }
+            }
+
+            // Sensor status collection
+            collection SensorStatus {
+                description "en": "Status of all environmental sensors"
+                ordered
+                
+                elements {
+                    property TemperatureSensorStatus {
+                        description "en": "Temperature sensor operational status"
+                        valueType string
+                        value "Online"
+                    }
+                    
+                    property HumiditySensorStatus {
+                        description "en": "Humidity sensor operational status" 
+                        valueType string
+                        value "Online"
+                    }
+                    
+                    property CO2SensorStatus {
+                        description "en": "CO2 sensor operational status"
+                        valueType string
+                        value "Online"
+                    }
+                }
+            }
+
+            // Historical data ranges
+            range TemperatureHistory24h (ref(ModelReference, TemperatureConcept)) {
+                description "en": "Temperature range over last 24 hours"
+                valueType double
+                min 20.1
+                max 24.8
+            }
+
+            range HumidityHistory24h (ref(ModelReference, HumidityConcept)) {
+                description "en": "Humidity range over last 24 hours"
+                valueType double
+                min 38.5
+                max 52.3
+            }
+
+            // Calibration operation
+            operation CalibrateSensors {
+                description "en": "Calibrate all environmental sensors"
+                
+                inputVariables {
+                    var property CalibrationMode {
+                        description "en": "Calibration procedure type"
+                        valueType string
+                        value "full"
+                    }
+                    
+                    var property ReferenceTemperature {
+                        description "en": "Reference temperature for calibration"
+                        valueType double
+                    }
+                }
+                
+                outputVariables {
+                    var property CalibrationResult {
+                        description "en": "Calibration success status"
+                        valueType boolean
+                    }
+                    
+                    var property CalibrationReport {
+                        description "en": "Detailed calibration report"
+                        valueType string
+                    }
+                }
+            }
+
+            // Environmental alert events
+            event HighTemperatureAlert {
+                description "en": "Temperature exceeds comfortable range"
+                direction output
+                state on
+                messageTopic "hvac/room101/alerts/temperature/high"
+                maxInterval "PT30S"
+            }
+
+            event HighCO2Alert {
+                description "en": "CO2 levels exceed healthy limits"
+                direction output
+                state on
+                messageTopic "hvac/room101/alerts/co2/high"
+                maxInterval "PT60S"
+            }
+        }
+    }
+
+    // Control configuration submodel
+    submodel "urn:submodel:control:configuration" (ControlConfiguration) {
+        description "en": "HVAC control system configuration and setpoints"
+        
+        elements {
+            // Temperature control settings
+            collection TemperatureControl {
+                description "en": "Temperature control parameters"
+                
+                elements {
+                    property TargetTemperature (ref(ModelReference, TemperatureConcept)) {
+                        description "en": "Desired room temperature setpoint"
+                        valueType double
+                        value 22.0
+                        
+                        qualifiers {
+                            qualifier "Adjustable" {
+                                valueType boolean
+                                value true
+                            }
+                        }
+                    }
+                    
+                    range ComfortTemperatureRange (ref(ModelReference, TemperatureConcept)) {
+                        description "en": "Acceptable comfort temperature range"
+                        valueType double
+                        min 20.0
+                        max 24.0
+                    }
+                    
+                    property HeatingDeadband {
+                        description "en": "Heating control deadband"
+                        valueType double
+                        value 0.5
+                    }
+                    
+                    property CoolingDeadband {
+                        description "en": "Cooling control deadband" 
+                        valueType double
+                        value 0.5
+                    }
+                }
+            }
+
+            // Humidity control settings
+            collection HumidityControl {
+                description "en": "Humidity control parameters"
+                
+                elements {
+                    property TargetHumidity (ref(ModelReference, HumidityConcept)) {
+                        description "en": "Desired relative humidity setpoint"
+                        valueType double
+                        value 45.0
+                    }
+                    
+                    range ComfortHumidityRange (ref(ModelReference, HumidityConcept)) {
+                        description "en": "Acceptable comfort humidity range"
+                        valueType double
+                        min 30.0
+                        max 60.0
+                    }
+                }
+            }
+
+            // Air quality control
+            collection AirQualityControl {
+                description "en": "Air quality control parameters"
+                
+                elements {
+                    property MaxCO2Level (ref(ModelReference, CO2Concept)) {
+                        description "en": "Maximum acceptable CO2 concentration"
+                        valueType int
+                        value 1000
+                    }
+                    
+                    property VentilationRate {
+                        description "en": "Minimum fresh air ventilation rate"
+                        valueType double
+                        value 8.5
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "L/s/person"
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Operating schedules
+            collection OperatingSchedule {
+                description "en": "Time-based operating schedules"
+                
+                elements {
+                    mlproperty WeekdaySchedule {
+                        description "en": "Weekday operating schedule"
+                        value "en": "Monday-Friday: 07:00-18:00",
+                              "de": "Montag-Freitag: 07:00-18:00"
+                    }
+                    
+                    mlproperty WeekendSchedule {
+                        description "en": "Weekend operating schedule"
+                        value "en": "Saturday-Sunday: 09:00-17:00",
+                              "de": "Samstag-Sonntag: 09:00-17:00"
+                    }
+                    
+                    property OccupancyOverride {
+                        description "en": "Manual occupancy override active"
+                        valueType boolean
+                        value false
+                    }
+                }
+            }
+
+            // Control operations
+            operation SetTemperature {
+                description "en": "Set target room temperature"
+                
+                inputVariables {
+                    var property NewTemperature {
+                        description "en": "New temperature setpoint"
+                        valueType double
+                    }
+                }
+                
+                outputVariables {
+                    var property SetSuccess {
+                        description "en": "Temperature set operation success"
+                        valueType boolean
+                    }
+                }
+            }
+
+            operation EnableEconomyMode {
+                description "en": "Enable energy-saving economy mode"
+                
+                outputVariables {
+                    var property EconomyModeActive {
+                        description "en": "Economy mode activation status"
+                        valueType boolean
+                    }
+                }
+            }
+        }
+    }
+
+    // Equipment status and diagnostics submodel
+    submodel "urn:submodel:equipment:status" (EquipmentStatus) {
+        description "en": "HVAC equipment operational status and diagnostics"
+        
+        elements {
+            // Actuator status
+            collection ActuatorStatus {
+                description "en": "Status of all HVAC actuators"
+                
+                elements {
+                    property DamperPosition {
+                        description "en": "Air damper position percentage"
+                        valueType double
+                        value 65.0
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "%"
+                            }
+                            qualifier "Range" {
+                                valueType string
+                                value "0-100%"
+                            }
+                        }
+                    }
+                    
+                    property HeatingValvePosition {
+                        description "en": "Heating valve position percentage"
+                        valueType double
+                        value 35.0
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "%"
+                            }
+                        }
+                    }
+                    
+                    property FanSpeed {
+                        description "en": "Supply fan speed percentage"
+                        valueType double
+                        value 70.0
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "%"
+                            }
+                        }
+                    }
+                }
+            }
+
+            // System status
+            property SystemMode {
+                description "en": "Current HVAC system operating mode"
+                valueType string
+                value "Auto"
+                
+                qualifiers {
+                    qualifier "ValidValues" {
+                        valueType string
+                        value "Off,Heat,Cool,Auto,Eco"
+                    }
+                }
+            }
+
+            property SystemStatus {
+                description "en": "Overall system operational status"
+                valueType string
+                value "Normal"
+            }
+
+            // Energy monitoring
+            collection EnergyConsumption {
+                description "en": "Energy consumption monitoring"
+                
+                elements {
+                    property CurrentPowerConsumption {
+                        description "en": "Current total power consumption"
+                        valueType double
+                        value 2.35
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "kW"
+                            }
+                        }
+                    }
+                    
+                    property DailyEnergyConsumption {
+                        description "en": "Total energy consumed today"
+                        valueType double
+                        value 18.7
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "kWh"
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Maintenance information
+            file MaintenanceManual {
+                description "en": "HVAC system maintenance manual"
+                mimeType "application/pdf"
+                value "/docs/hvac/room_controller_maintenance_v2.1.pdf"
+            }
+
+            property LastMaintenanceDate {
+                description "en": "Date of last scheduled maintenance"
+                valueType string
+                value "2024-07-15"
+            }
+
+            property NextMaintenanceDate {
+                description "en": "Date of next scheduled maintenance"
+                valueType string
+                value "2024-10-15"
+            }
+
+            // Diagnostic operations
+            operation RunDiagnostics {
+                description "en": "Execute comprehensive system diagnostics"
+                
+                outputVariables {
+                    var property DiagnosticResults {
+                        description "en": "System diagnostic test results"
+                        valueType string
+                    }
+                    
+                    var property SystemHealth {
+                        description "en": "Overall system health percentage"
+                        valueType double
+                    }
+                }
+            }
+
+            operation ResetAlarms {
+                description "en": "Reset all active system alarms"
+                
+                outputVariables {
+                    var property ResetSuccess {
+                        description "en": "Alarm reset operation success"
+                        valueType boolean
+                    }
+                }
+            }
+
+            // Maintenance alerts
+            event MaintenanceRequired {
+                description "en": "Scheduled maintenance is due"
+                direction output
+                state off
+                messageTopic "hvac/room101/maintenance/required"
+                maxInterval "P1D"
+            }
+
+            event SystemFault {
+                description "en": "System fault detected"
+                direction output
+                state off
+                messageTopic "hvac/room101/fault"
+                maxInterval "PT5M"
+            }
+        }
+    }
+
+    // Room occupancy and usage submodel
+    submodel "urn:submodel:occupancy:usage" (OccupancyUsage) {
+        description "en": "Room occupancy detection and usage patterns"
+        
+        elements {
+            property CurrentOccupancy {
+                description "en": "Current number of people in room"
+                valueType int
+                value 3
+                
+                qualifiers {
+                    qualifier "DetectionMethod" {
+                        valueType string
+                        value "PIR+CO2"
+                    }
+                }
+            }
+            
+            property MaxOccupancy {
+                description "en": "Maximum designed room occupancy"
+                valueType int
+                value 12
+            }
+            
+            property OccupancyDetected {
+                description "en": "Room occupancy detected status"
+                valueType boolean
+                value true
+            }
+            
+            // Usage statistics
+            collection UsageStatistics {
+                description "en": "Room usage patterns and statistics"
+                
+                elements {
+                    property UtilizationToday {
+                        description "en": "Room utilization percentage today"
+                        valueType double
+                        value 75.5
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "%"
+                            }
+                        }
+                    }
+                    
+                    property AverageOccupancyTime {
+                        description "en": "Average daily occupancy duration"
+                        valueType double
+                        value 6.5
+                        
+                        qualifiers {
+                            qualifier "Unit" {
+                                valueType string
+                                value "hours"
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Occupancy events
+            event OccupancyChanged {
+                description "en": "Room occupancy status changed"
+                direction output
+                state on
+                messageTopic "hvac/room101/occupancy/changed"
+                maxInterval "PT30S"
+            }
+        }
+    }
+
+    // Main Asset Administration Shell for the room control system
+    aas "urn:aas:hvac:room:101" (Room101HVACAAS) {
+        description "en": "Asset Administration Shell for Room 101 HVAC Control System",
+                   "de": "Asset Administration Shell für Raum 101 HLK-Steuerungssystem"
+        
+        administration admin {
+            version "3.0"
+            revision "12"
+            creator ref(GlobalReference, "urn:company:building:automation:team")
+            templateId "hvac-room-control-template-v3.0"
+        }
+        
+        asset "urn:building:hvac:room:101:controller"
+        
+        submodels {
+            "urn:submodel:environmental:monitoring",
+            "urn:submodel:control:configuration", 
+            "urn:submodel:equipment:status",
+            "urn:submodel:occupancy:usage"
+        }
+        
+        views {
+            view OperatorView {
+                description "en": "Real-time monitoring view for HVAC operators"
+                semanticId ref(GlobalReference, "http://hvac.standards.org/operator-view")
+                containedElements {
+                    CurrentTemperature,
+                    CurrentHumidity,
+                    CurrentCO2,
+                    TargetTemperature,
+                    SystemMode,
+                    CurrentOccupancy
+                }
+            }
+            
+            view MaintenanceView {
+                description "en": "Maintenance and diagnostics view"
+                containedElements {
+                    ActuatorStatus,
+                    EnergyConsumption,
+                    LastMaintenanceDate,
+                    NextMaintenanceDate,
+                    RunDiagnostics
+                }
+            }
+            
+            view ConfigurationView {
+                description "en": "System configuration and setpoints"
+                containedElements {
+                    TemperatureControl,
+                    HumidityControl,
+                    AirQualityControl,
+                    OperatingSchedule
+                }
+            }
+            
+            view EnergyView {
+                description "en": "Energy consumption and efficiency monitoring"
+                containedElements {
+                    EnergyConsumption,
+                    UtilizationToday,
+                    SystemMode
+                }
+            }
+        }
+    }
+}

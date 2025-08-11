@@ -1,0 +1,337 @@
+// Simple HVAC Room Control Example
+// A basic room temperature and air quality control system
+
+environment SimpleRoomControl {
+    
+    // Define the room controller asset
+    asset "urn:hvac:room:office:205:controller" (RoomController205) {
+        description "en": "Smart thermostat and air quality controller for office 205"
+        kind Instance
+        category "ControlDevice"
+    }
+
+    // Temperature concept
+    concept "urn:concepts:room:temperature" (RoomTemperature) {
+        description "en": "Room air temperature for HVAC control"
+        embeddedDataSpecifications {
+            dataSpec ref(GlobalReference, "http://standards.hvac.org/temperature")
+            iec61360 {
+                preferredName "en": "Room Temperature"
+                unit "°C"
+                dataType double
+                definition "en": "Indoor air temperature measurement for climate control"
+            }
+        }
+    }
+
+    // Environmental monitoring submodel
+    submodel "urn:submodel:room:environmental" (RoomEnvironmental) {
+        description "en": "Room environmental conditions monitoring"
+        
+        elements {
+            // Current readings
+            property Temperature (ref(ModelReference, RoomTemperature)) {
+                description "en": "Current room temperature"
+                valueType double
+                value 21.5
+            }
+            
+            property Humidity {
+                description "en": "Current relative humidity"
+                valueType double
+                value 42.0
+                qualifiers {
+                    qualifier "Unit" { valueType string value "%" }
+                }
+            }
+            
+            property AirQuality {
+                description "en": "CO2 concentration level"
+                valueType int
+                value 450
+                qualifiers {
+                    qualifier "Unit" { valueType string value "ppm" }
+                }
+            }
+
+            // Control setpoints
+            property TargetTemperature (ref(ModelReference, RoomTemperature)) {
+                description "en": "Desired temperature setpoint"
+                valueType double
+                value 22.0
+            }
+            
+            range ComfortRange (ref(ModelReference, RoomTemperature)) {
+                description "en": "Comfortable temperature range"
+                valueType double
+                min 20.0
+                max 24.0
+            }
+
+            // System status
+            property HeatingActive {
+                description "en": "Heating system currently active"
+                valueType boolean
+                value false
+            }
+            
+            property CoolingActive {
+                description "en": "Cooling system currently active" 
+                valueType boolean
+                value false
+            }
+            
+            property FanRunning {
+                description "en": "Ventilation fan currently running"
+                valueType boolean
+                value true
+            }
+
+            // Control operations
+            operation SetTemperature {
+                description "en": "Adjust target temperature"
+                inputVariables {
+                    var property NewSetpoint {
+                        valueType double
+                    }
+                }
+                outputVariables {
+                    var property Success {
+                        valueType boolean
+                    }
+                }
+            }
+            
+            operation BoostVentilation {
+                description "en": "Temporarily increase ventilation rate"
+                inputVariables {
+                    var property Duration {
+                        valueType int
+                        qualifiers {
+                            qualifier "Unit" { valueType string value "minutes" }
+                        }
+                    }
+                }
+            }
+
+            // Alert events
+            event TemperatureAlert {
+                description "en": "Temperature outside comfort range"
+                direction output
+                state off
+                messageTopic "room/205/alerts/temperature"
+            }
+            
+            event AirQualityAlert {
+                description "en": "Poor air quality detected"
+                direction output  
+                state off
+                messageTopic "room/205/alerts/airquality"
+            }
+        }
+    }
+
+    // Control settings submodel
+    submodel "urn:submodel:room:settings" (RoomSettings) {
+        description "en": "Room control configuration and preferences"
+        
+        elements {
+            // Operating mode
+            property OperatingMode {
+                description "en": "Current HVAC operating mode"
+                valueType string
+                value "Auto"
+                qualifiers {
+                    qualifier "Options" {
+                        valueType string
+                        value "Off,Heat,Cool,Auto,Eco"
+                    }
+                }
+            }
+            
+            // Schedule settings
+            collection DailySchedule {
+                description "en": "Daily temperature schedule"
+                ordered
+                
+                elements {
+                    property MorningTemp {
+                        description "en": "Morning temperature (7:00 AM)"
+                        valueType double
+                        value 21.0
+                    }
+                    
+                    property DayTemp {
+                        description "en": "Daytime temperature (9:00 AM - 5:00 PM)"
+                        valueType double
+                        value 22.0
+                    }
+                    
+                    property EveningTemp {
+                        description "en": "Evening temperature (6:00 PM)"
+                        valueType double
+                        value 20.0
+                    }
+                    
+                    property NightTemp {
+                        description "en": "Night temperature (10:00 PM)"
+                        valueType double
+                        value 18.0
+                    }
+                }
+            }
+            
+            // User preferences
+            property EcoMode {
+                description "en": "Energy saving mode enabled"
+                valueType boolean
+                value true
+            }
+            
+            property AutoFan {
+                description "en": "Automatic fan speed control"
+                valueType boolean
+                value true
+            }
+            
+            mlproperty RoomName {
+                description "en": "Human-readable room name"
+                value "en": "Office 205 - Marketing Department",
+                      "de": "Büro 205 - Marketing Abteilung"
+            }
+
+            // Configuration operations
+            operation ApplySchedule {
+                description "en": "Apply new temperature schedule"
+                inputVariables {
+                    var collection NewSchedule {
+                        elements {
+                            property Morning { valueType double }
+                            property Day { valueType double }
+                            property Evening { valueType double }
+                            property Night { valueType double }
+                        }
+                    }
+                }
+            }
+            
+            operation ResetToDefaults {
+                description "en": "Reset all settings to factory defaults"
+                outputVariables {
+                    var property ResetComplete {
+                        valueType boolean
+                    }
+                }
+            }
+        }
+    }
+
+    // Energy monitoring submodel
+    submodel "urn:submodel:room:energy" (RoomEnergy) {
+        description "en": "Energy consumption monitoring and efficiency"
+        
+        elements {
+            property CurrentPower {
+                description "en": "Current power consumption"
+                valueType double
+                value 1.8
+                qualifiers {
+                    qualifier "Unit" { valueType string value "kW" }
+                }
+            }
+            
+            property TodayConsumption {
+                description "en": "Energy consumed today"
+                valueType double
+                value 12.5
+                qualifiers {
+                    qualifier "Unit" { valueType string value "kWh" }
+                }
+            }
+            
+            property MonthlyConsumption {
+                description "en": "Energy consumed this month"
+                valueType double
+                value 285.7
+                qualifiers {
+                    qualifier "Unit" { valueType string value "kWh" }
+                }
+            }
+            
+            property EfficiencyRating {
+                description "en": "Current system efficiency rating"
+                valueType string
+                value "A+"
+            }
+            
+            // Energy optimization
+            operation OptimizeEnergy {
+                description "en": "Optimize settings for energy efficiency"
+                outputVariables {
+                    var property EstimatedSavings {
+                        valueType double
+                        qualifiers {
+                            qualifier "Unit" { valueType string value "%" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Main AAS for the room control system
+    aas "urn:aas:room:office:205" (Office205AAS) {
+        description "en": "Smart room control system for Office 205"
+        
+        administration admin {
+            version "1.5"
+            revision "3"
+            creator ref(GlobalReference, "urn:company:facilities:team")
+        }
+        
+        asset "urn:hvac:room:office:205:controller"
+        
+        submodels {
+            "urn:submodel:room:environmental",
+            "urn:submodel:room:settings",
+            "urn:submodel:room:energy"
+        }
+        
+        views {
+            view QuickStatus {
+                description "en": "At-a-glance room status"
+                containedElements {
+                    Temperature,
+                    TargetTemperature,
+                    Humidity,
+                    OperatingMode
+                }
+            }
+            
+            view FullControl {
+                description "en": "Complete room control interface"
+                containedElements {
+                    Temperature,
+                    Humidity,
+                    AirQuality,
+                    TargetTemperature,
+                    OperatingMode,
+                    DailySchedule,
+                    SetTemperature,
+                    BoostVentilation
+                }
+            }
+            
+            view EnergyDashboard {
+                description "en": "Energy consumption and efficiency"
+                containedElements {
+                    CurrentPower,
+                    TodayConsumption,
+                    MonthlyConsumption,
+                    EfficiencyRating,
+                    OptimizeEnergy
+                }
+            }
+        }
+    }
+}

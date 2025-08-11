@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from "vitest";
 import { EmptyFileSystem, type LangiumDocument } from "langium";
 import { expandToString as s } from "langium/generate";
 import { parseHelper } from "langium/test";
-import { createAaSifyServices } from "../../src/language/aasify-module.js";
+import { createAaSifyServices } from "../../src/language/module.js";
 import { Model, isModel } from "../../src/language/generated/ast.js";
 
 let services: ReturnType<typeof createAaSifyServices>;

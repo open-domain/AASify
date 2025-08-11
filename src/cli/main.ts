@@ -1,8 +1,8 @@
-import type { Model } from '../language/generated/ast.js';
+import type { AasModel } from '../language/generated/ast.js';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { AaSifyLanguageMetaData } from '../language/generated/module.js';
-import { createAaSifyServices } from '../language/aasify-module.js';
+import { createAasifyServices } from '../language/module.js';
 import { extractAstNode } from './cli-util.js';
 import { generateJavaScript } from './generator.js';
 import { NodeFileSystem } from 'langium/node';
@@ -15,8 +15,8 @@ const packagePath = path.resolve(__dirname, '..', '..', 'package.json');
 const packageContent = await fs.readFile(packagePath, 'utf-8');
 
 export const generateAction = async (fileName: string, opts: GenerateOptions): Promise<void> => {
-    const services = createAaSifyServices(NodeFileSystem).AaSify;
-    const model = await extractAstNode<Model>(fileName, services);
+    const services = createAasifyServices(NodeFileSystem).AasifyLanguage;
+    const model = await extractAstNode<AasModel>(fileName, services);
     const generatedFilePath = generateJavaScript(model, fileName, opts.destination);
     console.log(chalk.green(`JavaScript code generated successfully: ${generatedFilePath}`));
 };
